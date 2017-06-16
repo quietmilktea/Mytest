@@ -7,7 +7,7 @@ import requests, json
 # from flask.ext.httpauth import HTTPBasicAuth
 
 app = Flask(__name__)
-
+# login for token
 @app.route('/rackhd/login', methods=['POST'])
 def rackhd_login():
 	if not request.json or not 'username' in request.json:
@@ -27,6 +27,7 @@ def rackhd_login():
 	res = requests.post(url, headers=headers, data=data, verify=False)
 	return res.text
 
+# OBMS
 @app.route('/rackhd/obms/read', methods=['GET'])
 def readobms():
 	url = "https://localhost:8443/api/current/obms"
@@ -102,7 +103,66 @@ def deleteobms():
 
 	return res.text
 
+# Nodes
+@app.route('/rackhd/nodes/read', methods=['GET'])
+def readnodes():
+	url = "https://localhost:8443/api/current/nodes"
+	token = request.headers.get('token')
+	headers = {
+		"Content-Type":"application/json",
+		"Authorization": "JWT " + token
+	}
 
+	res = requests.get(url, headers=headers, verify=False)
+	return res.text
+
+@app.route('/rackhd/nodes/create', methods=['POST'])
+def createnodes():
+	name = request.json['name']
+	type = request.json['type']
+	token = request.headers.get('token')
+	url = "https://localhost:8443/api/current/nodes"
+	headers = {
+		"Content-Type":"application/json",
+		"Authorization": "JWT " + token
+	}
+
+	data = '{"name":"' + name + '", "type":"' + type + '", "autoDiscover":false}'
+
+	res = requests.post(url, headers=headers, data=data, verify=False)
+	return res.text
+
+@app.route('/rackhd/nodes/update', methods=['PATCH'])
+def updatenodes():
+	id = request.json['id']
+	name = request.json['name']
+	type = request.json['type']
+	token = request.headers.get('token')
+	url = "https://localhost:8443/api/current/nodes/" + id
+	headers = {
+		"Content-Type":"application/json",
+		"Authorization":"JWT "+ token
+	}
+
+	data = '{"name":"' + name + '", "type":"' + type + '", "autoDiscover":false}'
+
+	res = requests.patch(url, headers=headers, data=data, verify=False)
+	return res.text
+
+@app.route('/rackhd/nodes/delete', methods=['DELETE'])
+def deletenodes():
+	id = request.json['id']
+	token = request.headers.get('token')
+	url = "https://localhost:8443/api/current/nodes/" + id
+
+	headers = {
+		"Content-Type":"application/json",
+		"Authorization": "JWT " + token
+	}
+
+	res = requests.delete(url, headers=headers, verify=False)
+	return res.text
+# SKUs
 @app.route('/rackhd/skus/read', methods=['GET'])
 def readskus():
 	url = "https://localhost:8443/api/current/skus"
